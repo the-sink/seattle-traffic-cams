@@ -11,5 +11,5 @@ A Seattle/King County-area traffic camera viewer
 - [ ] Camera name and close button on individual cameras in list
 - [ ] "Close all" button
 - [ ] Optional map layer to show active SFD incidents (data from https://sfdlive.com)
-- [ ] Fix for #1
-- [ ] Fix for #2
+- [ ] Fix for https://github.com/the-sink/seattle-traffic-cams/issues/1
+- [ ] Fix for https://github.com/the-sink/seattle-traffic-cams/issues/2
