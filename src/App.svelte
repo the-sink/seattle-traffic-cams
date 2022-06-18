@@ -35,7 +35,7 @@
 		if (url.endsWith('jpg')) {
 			return `<div class="card video-card" style="width: 25%;"><div class="card-body"><img data-id="${url}" class="imageStream img-fluid"></div></div>`;
 		} else {
-			return `<div class="card video-card" style="width: 25%;"><div class="card-body"><video autoplay controls data-id="${url}" style="width:100%;height:100%;object-fit:cover;"><track kind="captions"></video></div></div>`;
+			return `<div class="card video-card" style="width: 25%;"><div class="card-body"><video autoplay controls data-id="${url}" style="width:100%;height:100%;object-fit:cover;"></video></div></div>`;
 		}
 	}
 
