@@ -93,6 +93,7 @@
 			});
 		});
 
+		map.invalidateSize();
 		openStreams = openStreams;
 	});
 
@@ -143,16 +144,17 @@
 
 	function mapButton(){
 		let button = document.getElementById('mapButton');
-		let map = document.getElementById('map');
+		let mapElement = document.getElementById('map');
 		let contents = document.getElementById('contents');
 		mapOpen = !mapOpen;
 
 		button.className = "btn btn-" + (mapOpen ? "primary" : "secondary");
 		if (mapOpen){
-			map.style.setProperty("height", "70%", "important");
+			mapElement.style.setProperty("height", "70%", "important");
 			contents.style.setProperty("height", "23%", "important");
+			map.invalidateSize();
 		} else {
-			map.style.setProperty("height", "0%", "important");
+			mapElement.style.setProperty("height", "0%", "important");
 			contents.style.setProperty("height", "93%", "important");
 		}
 	}
