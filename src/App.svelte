@@ -8,16 +8,14 @@
 
 <script>
 	import { onMount } from 'svelte';
-	import { Container, Form, Input, Card, CardBody } from 'sveltestrap';
+	import { Container, Form, Input } from 'sveltestrap';
 	import Fa from 'svelte-fa';
 	import {faMapLocation, faSearch} from '@fortawesome/free-solid-svg-icons';
 	import L from 'leaflet';
 	import Hls from 'hls.js';
-	import 'whammy';
 
 	const listRequestUrl = "https://data-seattlecitygis.opendata.arcgis.com/datasets/SeattleCityGIS::traffic-cameras.geojson";
 	let openStreams = [];
-	let imageStreams = {};
 
 	let mapOpen = true;
 

@@ -21,11 +21,8 @@
     "@fortawesome/free-solid-svg-icons": "^6.1.1",
     "hls.js": "^1.1.5",
     "leaflet": "^1.8.0",
-    "leaflet-geosearch": "^3.6.1",
-    "leaflet-search": "^3.0.2",
     "sirv-cli": "^2.0.0",
     "svelte-fa": "^3.0.2",
-    "sveltestrap": "^5.9.0",
-    "whammy": "^0.0.1"
+    "sveltestrap": "^5.9.0"
   }
 }
