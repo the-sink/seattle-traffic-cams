@@ -30,6 +30,7 @@
 	let testsSkipped = false;
 	let fullyLoaded = false;
 
+	// Set up search result marker
 	let searchResultMarker = L.circleMarker([0, 0], {
 		radius: 8,
 		fillColor: '#c14343',
@@ -42,6 +43,7 @@
 		searchResultMarker.removeFrom(map);
 	});
 
+	// Returns the associated HTML for building a camera stream card template
 	function makeTemplateHTML(url){
 		if (url.endsWith('jpg')) {
 			return `<div class="card video-card" style="width: 25%;"><img data-id="${url}" class="image-stream img-fluid"></div>`;
@@ -50,8 +52,11 @@
 		}
 	}
 
+	// Bulk of the code for loading the map & initializing a list of available cameras
 	let map;
 	let load = (async(container) => {
+		// Set up map base layer
+
         map = L.map(container, {
             center: [47.608, -122.335],
             zoom: 11,
@@ -65,13 +70,20 @@
                 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community',
         }).addTo(map);
 
+		// Collect list of cameras, add markers to map
+
 		const response = await fetch(listRequestUrl);
 		const cameraList = await response.json();
 
 		for (const element of cameraList.features) {
 			const url = (element.properties.OWNERSHIP == "SDOT" ? `https://58cc2dce193dd.streamlock.net:443/live/${element.properties.NAME.replace('.jpg', '.stream')}/playlist.m3u8` : 'https://images.wsdot.wa.gov/nw/' + element.properties.NAME).replace(/(\r\n|\n|\r)/gm, "");
+			
+			// For SDOT streams only, this will try to make sure the feed actually exists.
+			// The force-cache mode may present issues if a camera is only temporarily offline, as the cached result will be used even if stale. Better solution needed at some point.
 			const working = testsSkipped || element.properties.OWNERSHIP == "WSDOT" || (await fetch(url, {cache: "force-cache"})).status == 200;
 			if (working) {
+
+				// Create marker for this camera
 				let marker = L.circleMarker([element.geometry.coordinates[1], element.geometry.coordinates[0]], {
 					radius: 5,
 					fillColor: '#438cc1',
@@ -83,6 +95,7 @@
 				marker.addTo(map);
 				cameraMarkers[element.properties.UNITID] = marker;
 
+				// Add or remove camera stream from page on click
 				marker.on('click', () => {
 					if (!fullyLoaded) return;
 
@@ -114,12 +127,14 @@
 			};
 		};
 
-		document.getElementById('skipTests').style.setProperty("visibility", "hidden");
 
-		map.invalidateSize();
+		document.getElementById('skipTests').style.setProperty("visibility", "hidden"); // (gross)
+
+		map.invalidateSize(); // Sometimes neccesary for the map to load properly for some reason?
 		openStreams = openStreams;
 		fullyLoaded = true;
 
+		// Open streams that are listed in the URL hash immediately
 		for (const id of window.location.hash.replace("#", "").split(",")) {
 			if (id == '') continue;
 
@@ -132,6 +147,7 @@
 		};
 	});
 
+	// Conduct a search using nominatim for locations given by the user in the search box
 	const searchChanged = async(e) => {
 		const changeValue = (e.target).value;
 		
@@ -149,16 +165,19 @@
 		const longitude = locationInfo[0].lon;
 		const amenity = locationInfo[0].address.amenity || locationInfo[0].address.tourism;
 
+		// Focus map to search result, move search result marker to location and show it
 		map.setView([latitude, longitude], 18);
 		searchResultMarker.setLatLng(new L.LatLng(latitude, longitude));
 		searchResultMarker.bindTooltip(amenity ? amenity + " (click to dismiss)" : "Click to dismiss");
 		searchResultMarker.addTo(map);
 	};
 
+	// If user presses the skip button during camera testing, skip the tests
 	const skipTestsPressed = async() => {
 		testsSkipped = true;
 	};
 
+	// Uses the given url to create a new HLS stream (or image) and place it in the video grid container
 	function addStream(url){
 		var container = document.getElementById('video-container');
 		var template = document.createElement('template');
@@ -179,10 +198,12 @@
 		video.parentElement.style.setProperty("width", document.getElementById('widthSlider').value + "%");
 	}
 
+	// Updates an existing image camera (WSDOT) by changing the query string to include the current timestamp
 	function updateImageStream(video){
 		video.src = video.dataset.id + "?" + new Date().getTime();
 	}
 
+	// Show/hide map window
 	function mapButton(){
 		let button = document.getElementById('mapButton');
 		let mapElement = document.getElementById('map');
@@ -208,6 +229,7 @@
 		window.history.replaceState(null, null, url.toString());
 	}
 
+	// Clear all currently open streams
 	function clearAllButton(){
 		openStreams = [];
 
@@ -226,6 +248,7 @@
 		window.location.hash = "";
 	}
 
+	// Adjust the width of all video streams (based on percentage of window size from 0 to 100)
 	function widthUpdate(){
 		var slider = document.getElementById('widthSlider');
 		var videos = document.getElementsByClassName('video-card');
@@ -239,6 +262,7 @@
 		window.history.replaceState(null, null, url.toString());
 	}
 
+	// Play all video streams and adjust their currentTime to 10 seconds less than their duration (SDOT streams update every 10 seconds)
 	function playAllButton(){
 		for (let video of document.querySelectorAll("video")) {
 			video.play();
@@ -246,6 +270,7 @@
 		};
 	}
 
+	// Initial startup tasks (ran before the map and camera list are fully loaded)
 	onMount(async () => {
 		var search = document.getElementById('search');
 		var slider = document.getElementById('widthSlider');
@@ -254,6 +279,7 @@
 			e.preventDefault();
 		});
 
+		// Load existing map visibility and video width parameters from the query string, if available
 		var url = new URLSearchParams(window.location.search);
 
 		var mapOpen = url.get('map');
@@ -270,6 +296,7 @@
 		};
 	});
 
+	// Update all camera images (WSDOT) every 5 seconds
 	setInterval(function(){
 		var imageStreams = document.getElementsByClassName('image-stream');
 		Array.from(imageStreams).forEach(updateImageStream);
