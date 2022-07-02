@@ -15,9 +15,9 @@
 
 <script>
 	import { onMount } from 'svelte';
-	import { Container, Form, Input, Tooltip } from 'sveltestrap';
+	import { Container, Form, Input, Tooltip, Badge } from 'sveltestrap';
 	import Fa from 'svelte-fa';
-	import {faMapLocation, faVideoSlash, faPlay} from '@fortawesome/free-solid-svg-icons';
+	import {faMapLocation, faVideoSlash, faPlay, faWarning} from '@fortawesome/free-solid-svg-icons';
 	import L from 'leaflet';
 	import Hls from 'hls.js';
 
@@ -259,6 +259,7 @@
 		var mapOpen = url.get('map');
 		if (mapOpen === 'false') {
 			testsSkipped = true;
+			document.getElementById('invalidCameraWarning').style.display = 'unset';
 			mapButton();
 		};
 
@@ -294,12 +295,14 @@
 
 <div id="map" class="shadow" use:load>
 	<div class="d-flex px-4 py-1" style="position: absolute;z-index: 999">
-		<Form inline id="search" class="px-4 py-2">
+		<Form inline id="search" class="ps-4 py-2">
 			<Input type="text" placeholder="Search location..." on:change={searchChanged} />
 			<button class="btn btn-primary btn-sm button-fadeout my-2" id="skipTests" type="button" on:click={skipTestsPressed}>
 				<span class="spinner-border spinner-border-sm text-nowrap" role="status" aria-hidden="true"></span> <b>Click if loading is taking absurdly long (broken SDOT streams may appear on map)</b>
 			</button>
 		</Form>
+		<Badge class="bg-danger ms-2 my-2" style="height: 38px;font-size:1.5em;display:none;" id="invalidCameraWarning"><Fa icon={faWarning} /></Badge>
+		<Tooltip target="invalidCameraWarning" bottom>Camera stream testing was skipped because the site launched with the map hidden. Some video streams that are offline/broken may be visible on the map! To automatically filter out broken video streams (to an extent), ensure the map is visible and reload the page. Depending on your internet connection, it may take a while.</Tooltip>
 	</div>
 </div>
 
