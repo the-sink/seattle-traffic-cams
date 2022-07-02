@@ -6,6 +6,11 @@
    <link rel="stylesheet" href="https://unpkg.com/leaflet-geosearch@3.0.0/dist/geosearch.css"/>
 
    <title>Seattle Traffic Camera Viewer</title>
+
+   <link
+   	rel="stylesheet"
+   	href="https://cdn.jsdelivr.net/npm/bootswatch@5.1.0/dist/darkly/bootstrap.min.css"
+	/>
 </svelte:head>
 
 <script>
@@ -68,7 +73,7 @@
 					radius: 5,
 					fillColor: '#438cc1',
 					fillOpacity: 1,
-					color: '#ffffff',
+					color: '#eaeaea',
 					weight: 1
 				});
 				marker.bindTooltip(element.properties.LOCATION);
@@ -81,6 +86,8 @@
 						//openStreams.splice(index, 1);
 						openStreams = openStreams.filter(m => m !== url);
 						marker.setStyle({fillColor: '#438cc1'});
+						marker.setStyle({color: '#eaeaea'});
+						marker.setStyle({weight: 1});
 
 						var existing = document.querySelector(`[data-id="${url}"]`).parentElement;
 						existing.remove();
@@ -88,6 +95,8 @@
 						openStreams.push(url);
 						openStreams = openStreams;
 						marker.setStyle({fillColor: '#c17a43'});
+						marker.setStyle({color: '#ffffff'});
+						marker.setStyle({weight: 2});
 
 						addStream(url);
 					}
@@ -237,6 +246,16 @@
 
 	:global(video) {
 		object-fit: cover;
+	}
+
+	:root {
+		--map-tiles-filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
+	}
+
+	@media (prefers-color-scheme: dark) {
+		:global(.map-tiles) {
+			filter:var(--map-tiles-filter, none);
+		}
 	}
 
 	:global(.leaflet-interactive) {
