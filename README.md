@@ -6,7 +6,7 @@ A static Seattle/King County-area traffic camera viewer hosted on GitHub pages.
 
 You can view the live site **[here](https://the-sink.github.io/seattle-traffic-cams/public/)**!
 
-![Screenshot](https://i.imgur.com/V8Gr3Tg.jpeg)
+[![Screenshot](https://i.imgur.com/V8Gr3Tg.jpeg)](https://the-sink.github.io/seattle-traffic-cams/public/)
 
 ### To-Do List
 
@@ -14,5 +14,3 @@ You can view the live site **[here](https://the-sink.github.io/seattle-traffic-c
 - [ ]  Camera name and close button on individual cameras in list
 - [ ]  "Close all" button
 - [ ]  Optional map layer to show active SFD incidents (data from [sfdlive](https://sfdlive.com))
-- [ ]  Fix for [#1](https://github.com/the-sink/seattle-traffic-cams/issues/1)
-- [ ]  Fix for [#2](https://github.com/the-sink/seattle-traffic-cams/issues/2)
