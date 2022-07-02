@@ -207,10 +207,10 @@
 	<div class="d-flex px-4 py-1" style="position: absolute;z-index: 999">
 		<Form inline id="search" class="px-4 py-2">
 			<Input type="text" placeholder="Search location..." on:change={searchChanged} />
+			<button class="btn btn-primary btn-sm button-fadeout my-2" id="skipTests" type="button" on:click={skipTestsPressed}>
+				<span class="spinner-border spinner-border-sm text-nowrap" role="status" aria-hidden="true"></span> <b>Click if loading is taking absurdly long (skip validity tests)</b>
+			</button>
 		</Form>
-		<button class="btn btn-primary btn-sm button-fadeout" id="skipTests" type="button" on:click={skipTestsPressed}>
-			<span class="spinner-border spinner-border-sm text-nowrap" role="status" aria-hidden="true"></span> <b>Click to skip validity test (for slow connections)</b>
-		</button>
 	</div>
 </div>
 
