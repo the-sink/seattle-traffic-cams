@@ -12,5 +12,6 @@ You can view the live site **[here](https://the-sink.github.io/seattle-traffic-c
 
 - [ ]  Ability to save currently open cameras to the URL hash to be re-loaded later
 - [ ]  Camera name and close button on individual cameras in list
-- [ ]  "Close all" button
+- [x]  "Close all" button
 - [ ]  Optional map layer to show active SFD incidents (data from [sfdlive](https://sfdlive.com))
+- [ ]  Move certain parameters to a config file (such as marker colors)
