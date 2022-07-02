@@ -15,14 +15,15 @@
 
 <script>
 	import { onMount } from 'svelte';
-	import { Container, Form, Input } from 'sveltestrap';
+	import { Container, Form, Input, Tooltip } from 'sveltestrap';
 	import Fa from 'svelte-fa';
-	import {faMapLocation, faSearch} from '@fortawesome/free-solid-svg-icons';
+	import {faMapLocation, faVideoSlash} from '@fortawesome/free-solid-svg-icons';
 	import L from 'leaflet';
 	import Hls from 'hls.js';
 
 	const listRequestUrl = "https://data-seattlecitygis.opendata.arcgis.com/datasets/SeattleCityGIS::traffic-cameras.geojson";
 	let openStreams = [];
+	let cameraMarkers = [];
 
 	let mapOpen = true;
 	let testsSkipped = false;
@@ -41,7 +42,7 @@
 
 	function makeTemplateHTML(url){
 		if (url.endsWith('jpg')) {
-			return `<div class="card video-card" style="width: 25%;"><img data-id="${url}" class="imageStream img-fluid"></div>`;
+			return `<div class="card video-card" style="width: 25%;"><img data-id="${url}" class="image-stream img-fluid"></div>`;
 		} else {
 			return `<div class="card video-card" style="width: 25%;"><video autoplay controls data-id="${url}" style="width:100%;height:100%;object-fit:cover;"></video></div>`;
 		}
@@ -78,12 +79,12 @@
 				});
 				marker.bindTooltip(element.properties.LOCATION);
 				marker.addTo(map);
+				cameraMarkers.push(marker);
 
 				marker.on('click', () => {
 					const index = openStreams.indexOf(url);
 
 					if (index > -1) {
-						//openStreams.splice(index, 1);
 						openStreams = openStreams.filter(m => m !== url);
 						marker.setStyle({fillColor: '#438cc1'});
 						marker.setStyle({color: '#eaeaea'});
@@ -99,12 +100,12 @@
 						marker.setStyle({weight: 2});
 
 						addStream(url);
-					}
+					};
 
 					console.log(openStreams);
 				});
-			}
-		}
+			};
+		};
 
 		document.getElementById('skipTests').style.setProperty("visibility", "hidden");
 
@@ -169,7 +170,7 @@
 		let contents = document.getElementById('contents');
 		mapOpen = !mapOpen;
 
-		button.className = "btn btn-" + (mapOpen ? "primary" : "secondary");
+		button.className = "btn me-2 btn-" + (mapOpen ? "primary" : "secondary");
 		if (mapOpen){
 			mapElement.style.setProperty("height", "70%", "important");
 			contents.style.setProperty("height", "calc(30% - 60px)", "important");
@@ -178,6 +179,22 @@
 			mapElement.style.setProperty("height", "0%", "important");
 			contents.style.setProperty("height", "calc(100% - 60px)", "important");
 		}
+	}
+
+	function clearAllButton(){
+		openStreams = [];
+
+		var videos = document.getElementsByClassName('video-card');
+
+		Array.from(videos).forEach(function(video){
+			video.remove();
+		});
+
+		cameraMarkers.forEach(function(marker){
+			marker.setStyle({fillColor: '#438cc1'});
+			marker.setStyle({color: '#eaeaea'});
+			marker.setStyle({weight: 1});
+		});
 	}
 
 	function widthUpdate(){
@@ -198,15 +215,19 @@
 	});
 
 	setInterval(function(){
-		var imageStreams = document.getElementsByClassName('imageStream');
+		var imageStreams = document.getElementsByClassName('image-stream');
 		Array.from(imageStreams).forEach(updateImageStream);
 	}, 5000);
 
 </script>
 
 <div class="d-flex justify-content-end p-2" style="height: 60px;">
-	<input type="range" min="5" max="100" value="25" id="widthSlider" class="ms-2 me-4" on:input={widthUpdate}>
-	<button type="button" class="btn btn-primary btn" id="mapButton" on:click={mapButton}><Fa icon={faMapLocation} /></button>
+	<input type="range" min="5" max="100" value="25" id="widthSlider" class="ms-2 me-2" on:input={widthUpdate}>
+	<Tooltip target="widthSlider" bottom>Video Width</Tooltip>
+	<button type="button" class="btn btn-primary me-2" id="mapButton" on:click={mapButton}><Fa icon={faMapLocation} /></button>
+	<Tooltip target="mapButton" bottom>Show/Hide Map</Tooltip>
+	<button type="button" class="btn btn-outline-danger" id="clearAllButton" on:click={clearAllButton}><Fa icon={faVideoSlash} /></button>
+	<Tooltip target="clearAllButton" bottom>Clear All Streams</Tooltip>
 </div>
 <div id="contents" class="overflow-auto">
 	<Container fluid class="p-0">
@@ -219,7 +240,7 @@
 		<Form inline id="search" class="px-4 py-2">
 			<Input type="text" placeholder="Search location..." on:change={searchChanged} />
 			<button class="btn btn-primary btn-sm button-fadeout my-2" id="skipTests" type="button" on:click={skipTestsPressed}>
-				<span class="spinner-border spinner-border-sm text-nowrap" role="status" aria-hidden="true"></span> <b>Click if loading is taking absurdly long (broken streams may appear on map)</b>
+				<span class="spinner-border spinner-border-sm text-nowrap" role="status" aria-hidden="true"></span> <b>Click if loading is taking absurdly long (broken SDOT streams may appear on map)</b>
 			</button>
 		</Form>
 	</div>
