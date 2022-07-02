@@ -32,7 +32,7 @@
 		fillColor: '#c14343',
 		fillOpacity: 1,
 		color: '#ffffff',
-		weight: 1
+		weight: 2
 	});
 	searchResultMarker.bindTooltip("Click to dismiss");
 	searchResultMarker.on('click', () => {
@@ -66,7 +66,7 @@
 		const cameraList = await response.json();
 
 		for (const element of cameraList.features) {
-			const url = element.properties.OWNERSHIP == "SDOT" ? `https://58cc2dce193dd.streamlock.net:443/live/${element.properties.NAME.replace('.jpg', '.stream')}/playlist.m3u8` : 'https://images.wsdot.wa.gov/nw/' + element.properties.NAME;
+			const url = (element.properties.OWNERSHIP == "SDOT" ? `https://58cc2dce193dd.streamlock.net:443/live/${element.properties.NAME.replace('.jpg', '.stream')}/playlist.m3u8` : 'https://images.wsdot.wa.gov/nw/' + element.properties.NAME).replace(/(\r\n|\n|\r)/gm, "");
 			const working = testsSkipped || element.properties.OWNERSHIP == "WSDOT" || (await fetch(url, {cache: "force-cache"})).status == 200;
 			if (working) {
 				let marker = L.circleMarker([element.geometry.coordinates[1], element.geometry.coordinates[0]], {
@@ -106,7 +106,7 @@
 			}
 		}
 
-		document.getElementById('skipTests').remove();
+		document.getElementById('skipTests').style.setProperty("visibility", "hidden");
 
 		map.invalidateSize();
 		openStreams = openStreams;
@@ -172,11 +172,11 @@
 		button.className = "btn btn-" + (mapOpen ? "primary" : "secondary");
 		if (mapOpen){
 			mapElement.style.setProperty("height", "70%", "important");
-			contents.style.setProperty("height", "23%", "important");
+			contents.style.setProperty("height", "calc(30% - 60px)", "important");
 			map.invalidateSize();
 		} else {
 			mapElement.style.setProperty("height", "0%", "important");
-			contents.style.setProperty("height", "93%", "important");
+			contents.style.setProperty("height", "calc(100% - 60px)", "important");
 		}
 	}
 
@@ -204,9 +204,9 @@
 
 </script>
 
-<div class="d-flex justify-content-end p-2" style="height: 7%;">
+<div class="d-flex justify-content-end p-2" style="height: 60px;">
 	<input type="range" min="5" max="100" value="25" id="widthSlider" class="ms-2 me-4" on:input={widthUpdate}>
-	<button type="button" class="btn btn-primary" id="mapButton" on:click={mapButton}><Fa icon={faMapLocation} /></button>
+	<button type="button" class="btn btn-primary btn" id="mapButton" on:click={mapButton}><Fa icon={faMapLocation} /></button>
 </div>
 <div id="contents" class="overflow-auto">
 	<Container fluid class="p-0">
@@ -219,7 +219,7 @@
 		<Form inline id="search" class="px-4 py-2">
 			<Input type="text" placeholder="Search location..." on:change={searchChanged} />
 			<button class="btn btn-primary btn-sm button-fadeout my-2" id="skipTests" type="button" on:click={skipTestsPressed}>
-				<span class="spinner-border spinner-border-sm text-nowrap" role="status" aria-hidden="true"></span> <b>Click if loading is taking absurdly long (skip validity tests)</b>
+				<span class="spinner-border spinner-border-sm text-nowrap" role="status" aria-hidden="true"></span> <b>Click if loading is taking absurdly long (broken streams may appear on map)</b>
 			</button>
 		</Form>
 	</div>
@@ -228,7 +228,7 @@
 <style>
     :global(#map) {
         padding: 0;
-		height: 70% !important;
+		height: calc(70%) !important;
         min-width: 100%;
         width: 100%;
         height: 40%;
@@ -237,7 +237,7 @@
     }
 
 	:global(#contents) {
-		height: 23%;
+		height: calc(30% - 60px);
 	}
 
 	:global(.flex-grow) {
@@ -246,6 +246,10 @@
 
 	:global(video) {
 		object-fit: cover;
+	}
+
+	:global(.form-control) {
+		color: rgb(232, 230, 227) !important;
 	}
 
 	:global(.leaflet-control-attribution) {
