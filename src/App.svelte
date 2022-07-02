@@ -232,6 +232,7 @@
 	// Clear all currently open streams
 	function clearAllButton(){
 		openStreams = [];
+		openUnitIds = [];
 
 		var videos = document.getElementsByClassName('video-card');
 
