@@ -248,6 +248,16 @@
 		object-fit: cover;
 	}
 
+	:global(.leaflet-control-attribution) {
+		background-color: rgba(24, 26, 27, 0.7) !important;
+		color: rgb(200, 195, 188) !important;
+	}
+
+	:global(.leaflet-bar a) {
+		background-color: rgba(24, 26, 27) !important;
+		color: rgb(232, 230, 227) !important;
+	}
+
 	:root {
 		--map-tiles-filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
 	}
