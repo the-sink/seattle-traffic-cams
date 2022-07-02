@@ -4,6 +4,8 @@
    integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
    crossorigin=""/>
    <link rel="stylesheet" href="https://unpkg.com/leaflet-geosearch@3.0.0/dist/geosearch.css"/>
+
+   <title>Seattle Traffic Camera Viewer</title>
 </svelte:head>
 
 <script>
@@ -18,6 +20,7 @@
 	let openStreams = [];
 
 	let mapOpen = true;
+	let testsSkipped = false;
 
 	let searchResultMarker = L.circleMarker([0, 0], {
 		radius: 8,
@@ -57,39 +60,44 @@
 		const response = await fetch(listRequestUrl);
 		const cameraList = await response.json();
 
-		cameraList.features.forEach(element => {
+		for (const element of cameraList.features) {
 			const url = element.properties.OWNERSHIP == "SDOT" ? `https://58cc2dce193dd.streamlock.net:443/live/${element.properties.NAME.replace('.jpg', '.stream')}/playlist.m3u8` : 'https://images.wsdot.wa.gov/nw/' + element.properties.NAME;
-			let marker = L.circleMarker([element.geometry.coordinates[1], element.geometry.coordinates[0]], {
-				radius: 5,
-				fillColor: '#438cc1',
-				fillOpacity: 1,
-				color: '#ffffff',
-				weight: 1
-			});
-			marker.bindTooltip(element.properties.LOCATION);
-			marker.addTo(map);
+			const working = testsSkipped || element.properties.OWNERSHIP == "WSDOT" || (await fetch(url, {cache: "force-cache"})).status == 200;
+			if (working) {
+				let marker = L.circleMarker([element.geometry.coordinates[1], element.geometry.coordinates[0]], {
+					radius: 5,
+					fillColor: '#438cc1',
+					fillOpacity: 1,
+					color: '#ffffff',
+					weight: 1
+				});
+				marker.bindTooltip(element.properties.LOCATION);
+				marker.addTo(map);
 
-			marker.on('click', () => {
-				const index = openStreams.indexOf(url);
+				marker.on('click', () => {
+					const index = openStreams.indexOf(url);
 
-				if (index > -1) {
-					//openStreams.splice(index, 1);
-					openStreams = openStreams.filter(m => m !== url);
-					marker.setStyle({fillColor: '#438cc1'});
+					if (index > -1) {
+						//openStreams.splice(index, 1);
+						openStreams = openStreams.filter(m => m !== url);
+						marker.setStyle({fillColor: '#438cc1'});
 
-					var existing = document.querySelector(`[data-id="${url}"]`).parentElement.parentElement;
-					existing.remove();
-				} else {
-					openStreams.push(url);
-					openStreams = openStreams;
-					marker.setStyle({fillColor: '#c17a43'});
+						var existing = document.querySelector(`[data-id="${url}"]`).parentElement.parentElement;
+						existing.remove();
+					} else {
+						openStreams.push(url);
+						openStreams = openStreams;
+						marker.setStyle({fillColor: '#c17a43'});
 
-					addStream(url);
-				}
+						addStream(url);
+					}
 
-				console.log(openStreams);
-			});
-		});
+					console.log(openStreams);
+				});
+			}
+		}
+
+		document.getElementById('skipTests').remove();
 
 		map.invalidateSize();
 		openStreams = openStreams;
@@ -116,6 +124,10 @@
 		searchResultMarker.setLatLng(new L.LatLng(latitude, longitude));
 		searchResultMarker.bindTooltip(amenity ? amenity + " (click to dismiss)" : "Click to dismiss");
 		searchResultMarker.addTo(map);
+	};
+
+	const skipTestsPressed = async() => {
+		testsSkipped = true;
 	};
 
 	function addStream(url){
@@ -196,6 +208,9 @@
 		<Form inline id="search" class="px-4 py-2">
 			<Input type="text" placeholder="Search location..." on:change={searchChanged} />
 		</Form>
+		<button class="btn btn-primary btn-sm button-fadeout" id="skipTests" type="button" on:click={skipTestsPressed}>
+			<span class="spinner-border spinner-border-sm text-nowrap" role="status" aria-hidden="true"></span> <b>Click to skip validity test (for slow connections)</b>
+		</button>
 	</div>
 </div>
 
@@ -216,5 +231,20 @@
 
 	:global(.flex-grow) {
 		height: 100%;
+	}
+
+	:global(.leaflet-interactive) {
+		-webkit-animation: fade-in 1s;
+		animation: fade-in 1s;
+	}
+
+	@keyframes fade-in {
+		from { opacity: 0; }
+		to   { opacity: 1; }
+	}
+
+	@-webkit-keyframes fade-in {
+		from { opacity: 0; }
+		to   { opacity: 1; }
 	}
 </style>
