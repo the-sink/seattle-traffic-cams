@@ -1,6 +1,6 @@
 <img src="icon.png" align="right" height="84" />
 
-# Seattle Traffic Cameras ![Svelte](https://img.shields.io/badge/svelte-%23f1413d.svg?style=for-the-badge&logo=svelte&logoColor=white) [![License](https://img.shields.io/github/license/the-sink/seattle-traffic-cams)](https://github.com/the-sink/seattle-traffic-cams/blob/main/LICENSE) [![Issues](https://img.shields.io/github/issues/the-sink/seattle-traffic-cams)](https://github.com/the-sink/seattle-traffic-cams/issues)
+# Seattle Traffic Cameras [![Svelte](https://img.shields.io/badge/svelte-%23f1413d.svg?style=for-the-badge&logo=svelte&logoColor=white)](https://svelte.dev/) [![License](https://img.shields.io/github/license/the-sink/seattle-traffic-cams)](https://github.com/the-sink/seattle-traffic-cams/blob/main/LICENSE) [![Issues](https://img.shields.io/github/issues/the-sink/seattle-traffic-cams)](https://github.com/the-sink/seattle-traffic-cams/issues)
 
 A static Seattle/King County-area traffic camera viewer hosted on GitHub pages.
 
