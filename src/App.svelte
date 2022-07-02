@@ -36,9 +36,9 @@
 
 	function makeTemplateHTML(url){
 		if (url.endsWith('jpg')) {
-			return `<div class="card video-card" style="width: 25%;"><div class="card-body"><img data-id="${url}" class="imageStream img-fluid"></div></div>`;
+			return `<div class="card video-card" style="width: 25%;"><img data-id="${url}" class="imageStream img-fluid"></div>`;
 		} else {
-			return `<div class="card video-card" style="width: 25%;"><div class="card-body"><video autoplay controls data-id="${url}" style="width:100%;height:100%;object-fit:cover;"></video></div></div>`;
+			return `<div class="card video-card" style="width: 25%;"><video autoplay controls data-id="${url}" style="width:100%;height:100%;object-fit:cover;"></video></div>`;
 		}
 	}
 
@@ -82,7 +82,7 @@
 						openStreams = openStreams.filter(m => m !== url);
 						marker.setStyle({fillColor: '#438cc1'});
 
-						var existing = document.querySelector(`[data-id="${url}"]`).parentElement.parentElement;
+						var existing = document.querySelector(`[data-id="${url}"]`).parentElement;
 						existing.remove();
 					} else {
 						openStreams.push(url);
@@ -136,7 +136,7 @@
 		template.innerHTML = makeTemplateHTML(url).trim();
 
 		var clone = template.content.cloneNode(true);
-		var cloned_node = container.appendChild(clone);
+		container.appendChild(clone);
 		var video = document.querySelector(`[data-id="${url}"]`);
 
 		if (url.endsWith("jpg")) {
@@ -145,7 +145,9 @@
 			var hls = new Hls();
 			hls.loadSource(url);
 			hls.attachMedia(video);
-		}
+		};
+
+		video.parentElement.style.setProperty("width", document.getElementById('widthSlider').value + "%");
 	}
 
 	function updateImageStream(video){
@@ -198,8 +200,8 @@
 	<button type="button" class="btn btn-primary" id="mapButton" on:click={mapButton}><Fa icon={faMapLocation} /></button>
 </div>
 <div id="contents" class="overflow-auto">
-	<Container fluid>
-		<ul id="video-container" class="d-flex flex-wrap"></ul>
+	<Container fluid class="p-0">
+		<ul id="video-container" class="d-flex flex-wrap p-0"></ul>
 	</Container>
 </div>
 
@@ -231,6 +233,10 @@
 
 	:global(.flex-grow) {
 		height: 100%;
+	}
+
+	:global(video) {
+		object-fit: cover;
 	}
 
 	:global(.leaflet-interactive) {
