@@ -17,16 +17,18 @@
 	import { onMount } from 'svelte';
 	import { Container, Form, Input, Tooltip } from 'sveltestrap';
 	import Fa from 'svelte-fa';
-	import {faMapLocation, faVideoSlash} from '@fortawesome/free-solid-svg-icons';
+	import {faMapLocation, faVideoSlash, faPlay} from '@fortawesome/free-solid-svg-icons';
 	import L from 'leaflet';
 	import Hls from 'hls.js';
 
 	const listRequestUrl = "https://data-seattlecitygis.opendata.arcgis.com/datasets/SeattleCityGIS::traffic-cameras.geojson";
 	let openStreams = [];
-	let cameraMarkers = [];
+	let cameraMarkers = {};
+	let openUnitIds = [];
 
 	let mapOpen = true;
 	let testsSkipped = false;
+	let fullyLoaded = false;
 
 	let searchResultMarker = L.circleMarker([0, 0], {
 		radius: 8,
@@ -79,13 +81,16 @@
 				});
 				marker.bindTooltip(element.properties.LOCATION);
 				marker.addTo(map);
-				cameraMarkers.push(marker);
+				cameraMarkers[element.properties.UNITID] = marker;
 
 				marker.on('click', () => {
+					if (!fullyLoaded) return;
+
 					const index = openStreams.indexOf(url);
 
 					if (index > -1) {
 						openStreams = openStreams.filter(m => m !== url);
+						openUnitIds = openUnitIds.filter(m => m !== element.properties.UNITID);
 						marker.setStyle({fillColor: '#438cc1'});
 						marker.setStyle({color: '#eaeaea'});
 						marker.setStyle({weight: 1});
@@ -93,6 +98,8 @@
 						var existing = document.querySelector(`[data-id="${url}"]`).parentElement;
 						existing.remove();
 					} else {
+						openUnitIds.push(element.properties.UNITID);
+
 						openStreams.push(url);
 						openStreams = openStreams;
 						marker.setStyle({fillColor: '#c17a43'});
@@ -102,7 +109,7 @@
 						addStream(url);
 					};
 
-					console.log(openStreams);
+					if (fullyLoaded) window.location.hash = "#" + openUnitIds.join();
 				});
 			};
 		};
@@ -111,6 +118,18 @@
 
 		map.invalidateSize();
 		openStreams = openStreams;
+		fullyLoaded = true;
+
+		for (const id of window.location.hash.replace("#", "").split(",")) {
+			if (id == '') continue;
+
+			if (id in cameraMarkers) {
+				cameraMarkers[id].fire('click');
+				cameraMarkers[id].fire('mouseout');
+			} else {
+				console.warn(`Camera ID ${id} is not available!`);
+			}
+		};
 	});
 
 	const searchChanged = async(e) => {
@@ -178,7 +197,15 @@
 		} else {
 			mapElement.style.setProperty("height", "0%", "important");
 			contents.style.setProperty("height", "calc(100% - 60px)", "important");
-		}
+		};
+
+		var url = new URL(window.location.href);
+		if (mapOpen) {
+			url.searchParams.delete('map');
+		} else {
+			url.searchParams.set('map', false);
+		};
+		window.history.replaceState(null, null, url.toString());
 	}
 
 	function clearAllButton(){
@@ -190,11 +217,13 @@
 			video.remove();
 		});
 
-		cameraMarkers.forEach(function(marker){
+		for (const [_, marker] of Object.entries(cameraMarkers)) {
 			marker.setStyle({fillColor: '#438cc1'});
 			marker.setStyle({color: '#eaeaea'});
 			marker.setStyle({weight: 1});
-		});
+		};
+
+		window.location.hash = "";
 	}
 
 	function widthUpdate(){
@@ -204,14 +233,40 @@
 		Array.from(videos).forEach(function(video){
 			video.style.setProperty("width", slider.value + "%");
 		});
+	
+		var url = new URL(window.location.href);
+		url.searchParams.set('videoWidth', slider.value);
+		window.history.replaceState(null, null, url.toString());
+	}
+
+	function playAllButton(){
+		for (let video of document.querySelectorAll("video")) {
+			video.play();
+			video.currentTime = video.duration - 10;
+		};
 	}
 
 	onMount(async () => {
 		var search = document.getElementById('search');
+		var slider = document.getElementById('widthSlider');
 
 		search.addEventListener('submit', e => {
 			e.preventDefault();
 		});
+
+		var url = new URLSearchParams(window.location.search);
+
+		var mapOpen = url.get('map');
+		if (mapOpen === 'false') {
+			testsSkipped = true;
+			mapButton();
+		};
+
+		var videoWidth = url.get('videoWidth');
+		if (videoWidth != null) {
+			slider.value = videoWidth;
+			widthUpdate();
+		};
 	});
 
 	setInterval(function(){
@@ -226,8 +281,10 @@
 	<Tooltip target="widthSlider" bottom>Video Width</Tooltip>
 	<button type="button" class="btn btn-primary me-2" id="mapButton" on:click={mapButton}><Fa icon={faMapLocation} /></button>
 	<Tooltip target="mapButton" bottom>Show/Hide Map</Tooltip>
-	<button type="button" class="btn btn-outline-danger" id="clearAllButton" on:click={clearAllButton}><Fa icon={faVideoSlash} /></button>
+	<button type="button" class="btn btn-outline-danger me-2" id="clearAllButton" on:click={clearAllButton}><Fa icon={faVideoSlash} /></button>
 	<Tooltip target="clearAllButton" bottom>Clear All Streams</Tooltip>
+	<button type="button" class="btn btn-outline-success" id="playAllButton" on:click={playAllButton}><Fa icon={faPlay} /></button>
+	<Tooltip target="playAllButton" bottom>Play All/Move to Current</Tooltip>
 </div>
 <div id="contents" class="overflow-auto">
 	<Container fluid class="p-0">
