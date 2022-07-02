@@ -6,7 +6,7 @@ A static Seattle/King County-area traffic camera viewer hosted on GitHub pages.
 
 You can view the live site **[here](https://the-sink.github.io/seattle-traffic-cams/public/)**!
 
-[![Screenshot](https://i.imgur.com/V8Gr3Tg.jpeg)](https://the-sink.github.io/seattle-traffic-cams/public/)
+[![Screenshot](https://i.imgur.com/KS8pxPn.jpeg)](https://the-sink.github.io/seattle-traffic-cams/public/)
 
 ### To-Do List
 
