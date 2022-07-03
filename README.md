@@ -8,6 +8,21 @@ You can view the live site **[here](https://the-sink.github.io/seattle-traffic-c
 
 [![Screenshot](https://i.imgur.com/KS8pxPn.jpeg)](https://the-sink.github.io/seattle-traffic-cams/public/)
 
+---
+
+## To-Do List
+
+- [x]  Ability to save currently open cameras to the URL hash to be re-loaded later
+- [x]  Camera name and close button on individual cameras in list (hover over stream)
+- [ ]  A built-in method of recording video streams and saving them as .mp4 or .webm files (requires above item first)
+- [ ]  Integrate data from [sfdlive](https://sfdlive.com) to show active fire department calls on the map
+- [x]  "Close all" button
+- [ ]  Move certain parameters to a config file (such as marker colors)
+- [ ]  Investigate possibility of a low framerate mode for when many cameras are pulled up at once
+- [ ]  Add drag function to camera streams so the layout can be rearranged
+
+---
+
 ## Guide
 
 When the site is first opened, a map will be visible on the bottom 2/3 of the screen. Markers will load in on the map (slowly or quickly depending on your internet connection); these are all traffic cameras. Many of the highway cameras are operated by WSDOT and are only still images that update every minute or so, whereas the rest (in the Seattle area) are operated by SDOT and are live video streams.
@@ -35,13 +50,4 @@ For example, [here](https://the-sink.github.io/seattle-traffic-cams/public/?vide
 Or, for something a bit more crazy, click the screenshot below for every single (working) Downtown Seattle traffic camera west of I-5. This will load over 60 simultaneous video streams, so make sure your device and internet can handle that!
 [![Screenshot](https://i.imgur.com/4IXfzS0.jpeg)](https://the-sink.github.io/seattle-traffic-cams/public/?videoWidth=10&map=false#CMR-0017,CMR-0332,CMR-0096,CMR-0098,CMR-0184,CMR-0267,CMR-0315,CMR-0097,CMR-0317,CMR-0056,CMR-0241,CMR-0171,CMR-0182,CMR-0106,CMR-0169,CMR-0040,CMR-0170,CMR-0173,CMR-0185,CMR-0168,CMR-0167,CMR-0186,CMR-0059,CMR-0261,CMR-0264,CMR-0174,CMR-0046,CMR-0240,CMR-0239,CMR-0039,CMR-0055,CMR-0058,CMR-0176,CMR-0030,CMR-0016,CMR-0257,CMR-0309,CMR-0255,CMR-0303,CMR-0178,CMR-0304,CMR-0188,CMR-0035,CMR-0069,CMR-0217,CMR-0165,CMR-0191,CMR-0291,CMR-0181,CMR-0305,CMR-0179,CMR-0153,CMR-0256,CMR-0180,CMR-0194,CMR-0318,CMR-0049,CMR-0156,CMR-0033,CMR-0218,CMR-0265,CMR-0310,CMR-0258,CMR-0311,CMR-0320,CMR-0189,CMR-0043)
 
-## To-Do List
-
-- [x]  Ability to save currently open cameras to the URL hash to be re-loaded later
-- [x]  Camera name and close button on individual cameras in list (hover over stream)
-- [ ]  A built-in method of recording video streams and saving them as .mp4 or .webm files (requires above item first)
-- [ ]  Integrate data from [sfdlive](https://sfdlive.com) to show active fire department calls on the map
-- [x]  "Close all" button
-- [ ]  Move certain parameters to a config file (such as marker colors)
-- [ ]  Investigate possibility of a low framerate mode for when many cameras are pulled up at once
-- [ ]  Add drag function to camera streams so the layout can be rearranged
+---
