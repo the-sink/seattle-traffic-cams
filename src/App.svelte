@@ -22,6 +22,7 @@
 	import Hls from 'hls.js';
 
 	const listRequestUrl = "https://data-seattlecitygis.opendata.arcgis.com/datasets/SeattleCityGIS::traffic-cameras.geojson";
+	const fallbackUrl = "https://the-sink.github.io/seattle-traffic-cams/fallback-data.geojson";
 	let openStreams = [];
 	let cameraMarkers = {};
 	let openUnitIds = [];
@@ -29,6 +30,9 @@
 	let mapOpen = true;
 	let testsSkipped = false;
 	let fullyLoaded = false;
+	let usingFallbackData = false;
+
+	let warningMessage = "";
 
 	// Set up search result marker
 	let searchResultMarker = L.circleMarker([0, 0], {
@@ -75,7 +79,14 @@
 
 		// Collect list of cameras, add markers to map
 
-		const response = await fetch(listRequestUrl);
+		let response = await fetch(listRequestUrl);
+
+		if (!response.ok) {
+			response = await fetch(fallbackUrl);
+			usingFallbackData = true;
+			warningMessage = "Unable to collect camera list from official city dataset. Map will use fallback data hosted on this site, which may be outdated.";
+		}
+
 		const cameraList = await response.json();
 
 		for (const element of cameraList.features) {
@@ -314,7 +325,7 @@
 		var mapOpen = url.get('map');
 		if (mapOpen === 'false') {
 			testsSkipped = true;
-			document.getElementById('invalidCameraWarning').style.display = 'unset';
+			warningMessage = "Camera stream testing was skipped because the site launched with the map hidden. Some video streams that are offline/broken may be visible on the map! To automatically filter out broken video streams (to an extent), ensure the map is visible and reload the page. Depending on your internet connection, it may take a while.";
 			mapButton();
 		};
 
@@ -357,8 +368,10 @@
 				<span class="spinner-border spinner-border-sm text-nowrap" role="status" aria-hidden="true"></span> <b>Click if loading is taking absurdly long (broken SDOT streams may appear on map)</b>
 			</button>
 		</Form>
-		<Badge class="bg-danger ms-2 my-2" style="height: 38px;font-size:1.5em;display:none;" id="invalidCameraWarning"><Fa icon={faWarning} /></Badge>
-		<Tooltip target="invalidCameraWarning" bottom>Camera stream testing was skipped because the site launched with the map hidden. Some video streams that are offline/broken may be visible on the map! To automatically filter out broken video streams (to an extent), ensure the map is visible and reload the page. Depending on your internet connection, it may take a while.</Tooltip>
+		{#if warningMessage.length > 0}
+			<button type="button" class="btn btn-danger ms-2 my-2" style="height: 38px;font-size:1.5em;" id="warning" on:click={()=>{warningMessage = ""}}><Fa icon={faWarning} /></button>
+			<Tooltip target="warning" bottom>{warningMessage}</Tooltip>
+		{/if}
 	</div>
 </div>
 
