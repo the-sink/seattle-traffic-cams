@@ -44,11 +44,14 @@
 	});
 
 	// Returns the associated HTML for building a camera stream card template
-	function makeTemplateHTML(url){
+	// (cursed)
+	function makeTemplateHTML(url, name){
+		let streamHeader = `<div class="d-flex justify-content-between px-2 py-1 user-select-none stream-header"><div>${name}</div><div><button type="button" class="btn btn-outline-danger btn-sm p-0 px-1" style="font-weight:900;">X</div></div>`
+
 		if (url.endsWith('jpg')) {
-			return `<div class="card video-card" style="width: 25%;"><img data-id="${url}" class="image-stream img-fluid"></div>`;
+			return `<div class="card video-card" style="width: 25%;">${streamHeader}<img data-id="${url}" class="image-stream img-fluid"></div>`;
 		} else {
-			return `<div class="card video-card" style="width: 25%;"><video muted autoplay controls data-id="${url}" style="width:100%;height:100%;object-fit:cover;"></video></div>`;
+			return `<div class="card video-card" style="width: 25%;">${streamHeader}<video muted autoplay controls data-id="${url}" style="width:100%;height:100%;object-fit:cover;"></video></div>`;
 		}
 	}
 
@@ -119,7 +122,7 @@
 						marker.setStyle({color: '#ffffff'});
 						marker.setStyle({weight: 2});
 
-						addStream(url);
+						addStream(url, element.properties);
 					};
 
 					if (fullyLoaded) window.location.hash = "#" + openUnitIds.join();
@@ -178,14 +181,17 @@
 	};
 
 	// Uses the given url to create a new HLS stream (or image) and place it in the video grid container
-	function addStream(url){
+	function addStream(url, properties){
 		var container = document.getElementById('video-container');
 		var template = document.createElement('template');
-		template.innerHTML = makeTemplateHTML(url).trim();
+		template.innerHTML = makeTemplateHTML(url, properties.LOCATION).trim();
 
 		var clone = template.content.cloneNode(true);
 		container.appendChild(clone);
 		var video = document.querySelector(`[data-id="${url}"]`);
+		var main = video.parentElement;
+		var header = main.querySelector('.stream-header');
+		var closeButton = header.querySelectorAll('div')[1].querySelector('button');
 
 		if (url.endsWith("jpg")) {
 			updateImageStream(video);
@@ -196,6 +202,28 @@
 		};
 
 		video.parentElement.style.setProperty("width", document.getElementById('widthSlider').value + "%");
+		header.style.setProperty('display', 'none', 'important');
+
+		main.addEventListener('mouseenter', function() {
+			console.log("mouse enter");
+			header.style.setProperty('display', 'flex', 'important');
+		});
+
+		main.addEventListener('mouseleave', function() {
+			console.log("mouse leave");
+			header.style.setProperty('display', 'none', 'important');
+		});
+
+		closeButton.addEventListener('click', function() {
+			openStreams = openStreams.filter(m => m !== url);
+			openUnitIds = openUnitIds.filter(m => m !== properties.UNITID);
+			cameraMarkers[properties.UNITID].setStyle({fillColor: '#438cc1'});
+			cameraMarkers[properties.UNITID].setStyle({color: '#eaeaea'});
+			cameraMarkers[properties.UNITID].setStyle({weight: 1});
+
+			window.location.hash = "#" + openUnitIds.join();
+			video.parentElement.remove();
+		});
 	}
 
 	// Updates an existing image camera (WSDOT) by changing the query string to include the current timestamp
@@ -369,6 +397,14 @@
 	:global(.leaflet-bar a) {
 		background-color: rgba(24, 26, 27) !important;
 		color: rgb(232, 230, 227) !important;
+	}
+
+	:global(.stream-header) {
+		position:absolute;
+		left:0;
+		right:0;
+		background: rgba(0,0,0,0.8);
+		z-index: 99;
 	}
 
 	:root {
