@@ -24,7 +24,7 @@ The size of all cameras can be adjusted with the video width slider at the top r
 
 ### Searching locations
 
-A location search bar is available at the top left of the map. It uses Nominatim to perform a geolocation search and displays the result location on the map with a red marker. This marker can be clicked to dismiss. You do not need to put "Seattle, WA" or something similar at the end of your search, as "seattle" is appended to the end of each search query automatically. Results are not flawless and don't work at all sometimes.
+A location search bar is available at the top left of the map. It uses Nominatim to perform a geolocation search and displays the result location on the map with a red marker. This marker can be clicked to dismiss. You do not need to put "Seattle, WA" or something similar at the end of your search, as "seattle" is appended to the end of each search query automatically. This makes it useful for searching intersections, as you can type stuff like "3rd & seneca" and it will pull up the intersection on the map. Addresses work as well, of course. Although be warned, results are not flawless and don't work at all sometimes.
 
 ### Persistence
 
