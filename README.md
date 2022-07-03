@@ -40,6 +40,7 @@ Or, for something a bit more crazy, click the screenshot below for every single 
 - [x]  Ability to save currently open cameras to the URL hash to be re-loaded later
 - [x]  Camera name and close button on individual cameras in list (hover over stream)
 - [ ]  A built-in method of recording video streams and saving them as .mp4 or .webm files (requires above item first)
+- [ ]  Integrate data from [sfdlive](https://sfdlive.com) to show active fire department calls on the map
 - [x]  "Close all" button
 - [ ]  Move certain parameters to a config file (such as marker colors)
 - [ ]  Investigate possibility of a low framerate mode for when many cameras are pulled up at once
