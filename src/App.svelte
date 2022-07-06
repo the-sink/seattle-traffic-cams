@@ -19,10 +19,18 @@
 	import Fa from 'svelte-fa';
 	import {faMapLocation, faVideoSlash, faPlay, faWarning} from '@fortawesome/free-solid-svg-icons';
 	import L from 'leaflet';
+
+    import "leaflet.markercluster/dist/leaflet.markercluster.js";
+    import "leaflet.markercluster/dist/MarkerCluster.css";
+    import "leaflet.markercluster/dist/MarkerCluster.Default.css";
+
 	import Hls from 'hls.js';
 
-	const listRequestUrl = "https://data-seattlecitygis.opendata.arcgis.com/datasets/SeattleCityGIS::traffic-cameras.geojson";
-	const fallbackUrl = "https://the-sink.github.io/seattle-traffic-cams/fallback-data.geojson";
+	const datasetRequestUrl = "https://the-sink.github.io/seattle-traffic-cams/data/dataset.geojson";
+	const sdotMapApiUrl = "https://the-sink.github.io/seattle-traffic-cams/data/sdot.json";
+
+	let cameras = {};
+
 	let openStreams = [];
 	let cameraMarkers = {};
 	let openUnitIds = [];
@@ -30,7 +38,6 @@
 	let mapOpen = true;
 	let testsSkipped = false;
 	let fullyLoaded = false;
-	let usingFallbackData = false;
 
 	let warningMessage = "";
 
@@ -59,6 +66,13 @@
 		}
 	}
 
+	function makeMarkerClusterIcon(n) {
+		return new L.DivIcon({
+			className: "circle-group",
+			iconSize: new L.Point(15, 15)
+		});
+	}
+
 	// Bulk of the code for loading the map & initializing a list of available cameras
 	let map;
 	let load = (async(container) => {
@@ -77,37 +91,68 @@
                 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community',
         }).addTo(map);
 
-		// Collect list of cameras, add markers to map
+		let markers = L.markerClusterGroup({maxClusterRadius: 1, iconCreateFunction: makeMarkerClusterIcon, spiderLegPolylineOptions: {weight: 1, color: '#eee', opacity: 1}});
+		map.addLayer(markers);
 
-		let response = await fetch(listRequestUrl);
+		// Collect list of cameras
 
-		if (!response.ok) {
-			response = await fetch(fallbackUrl);
-			usingFallbackData = true;
-			warningMessage = "Unable to collect camera list from official city dataset. Map will use fallback data hosted on this site, which may be outdated.";
+		const datasetResponse = await fetch(datasetRequestUrl);
+		const sdotResponse = await fetch(sdotMapApiUrl);
+
+		const datasetCameraList = await datasetResponse.json();
+		const sdotCameraList = await sdotResponse.json();
+
+		// Check SDOT first...
+		for (const group of sdotCameraList.Features) {
+			let coordinates = {lat: group.PointCoordinate[0], lon: group.PointCoordinate[1]};
+
+			for (const element of group.Cameras) {
+				let camera = {};
+
+				camera.id = element.Id;
+				camera.location = element.Description;
+				camera.url = element.ImageUrl;
+				camera.coordinates = coordinates;
+				camera.source = element.Type.toUpperCase();
+
+				cameras[element.Id] = camera;
+			}
 		}
 
-		const cameraList = await response.json();
+		/// ...Then check the Seattle Open Data source as it contains better location data, and override SDOT data if available
+		for (const element of datasetCameraList.features) {
+			let camera = {};
+			
+			camera.id = element.properties.UNITID;
+			camera.location = element.properties.LOCATION;
+			camera.url = element.properties.NAME;
+			camera.coordinates = {lat: element.geometry.coordinates[1], lon: element.geometry.coordinates[0]};
+			camera.source = element.properties.OWNERSHIP;
 
-		for (const element of cameraList.features) {
-			const url = (element.properties.OWNERSHIP == "SDOT" ? `https://58cc2dce193dd.streamlock.net:443/live/${element.properties.NAME.replace('.jpg', '.stream')}/playlist.m3u8` : 'https://images.wsdot.wa.gov/nw/' + element.properties.NAME).replace(/(\r\n|\n|\r)/gm, "");
+			cameras[element.properties.UNITID] = camera;
+		}
+
+		// Iterate over each camera and add them to the map
+
+		for (const [_, camera] of Object.entries(cameras)) {
+			const url = (camera.source == "SDOT" ? `https://58cc2dce193dd.streamlock.net:443/live/${camera.url.replace('.jpg', '.stream')}/playlist.m3u8` : 'https://images.wsdot.wa.gov/nw/' + camera.url).replace(/(\r\n|\n|\r)/gm, "");
 			
 			// For SDOT streams only, this will try to make sure the feed actually exists.
 			// The force-cache mode may present issues if a camera is only temporarily offline, as the cached result will be used even if stale. Better solution needed at some point.
-			const working = testsSkipped || element.properties.OWNERSHIP == "WSDOT" || (await fetch(url, {cache: "force-cache"})).status == 200;
+			const working = testsSkipped || camera.source == "WSDOT" || (await fetch(url, {cache: "force-cache"})).status == 200;
 			if (working) {
 
 				// Create marker for this camera
-				let marker = L.circleMarker([element.geometry.coordinates[1], element.geometry.coordinates[0]], {
+				let marker = L.circleMarker([camera.coordinates.lat, camera.coordinates.lon], {
 					radius: 5,
 					fillColor: '#438cc1',
 					fillOpacity: 1,
 					color: '#eaeaea',
 					weight: 1
 				});
-				marker.bindTooltip(element.properties.LOCATION);
-				marker.addTo(map);
-				cameraMarkers[element.properties.UNITID] = marker;
+				marker.bindTooltip(camera.location);
+				markers.addLayer(marker);
+				cameraMarkers[camera.id] = marker;
 
 				// Add or remove camera stream from page on click
 				marker.on('click', () => {
@@ -117,7 +162,7 @@
 
 					if (index > -1) {
 						openStreams = openStreams.filter(m => m !== url);
-						openUnitIds = openUnitIds.filter(m => m !== element.properties.UNITID);
+						openUnitIds = openUnitIds.filter(m => m !== camera.id);
 						marker.setStyle({fillColor: '#438cc1'});
 						marker.setStyle({color: '#eaeaea'});
 						marker.setStyle({weight: 1});
@@ -125,7 +170,7 @@
 						var existing = document.querySelector(`[data-id="${url}"]`).parentElement;
 						existing.remove();
 					} else {
-						openUnitIds.push(element.properties.UNITID);
+						openUnitIds.push(camera.id);
 
 						openStreams.push(url);
 						openStreams = openStreams;
@@ -133,7 +178,7 @@
 						marker.setStyle({color: '#ffffff'});
 						marker.setStyle({weight: 2});
 
-						addStream(url, element.properties);
+						addStream(url, camera);
 					};
 
 					if (fullyLoaded) window.location.hash = "#" + openUnitIds.join();
@@ -141,8 +186,7 @@
 			};
 		};
 
-
-		document.getElementById('skipTests').style.setProperty("visibility", "hidden"); // (gross)
+		document.getElementById('skipTests').style.setProperty("visibility", "hidden");
 
 		map.invalidateSize(); // Sometimes neccesary for the map to load properly for some reason?
 		openStreams = openStreams;
@@ -192,10 +236,10 @@
 	};
 
 	// Uses the given url to create a new HLS stream (or image) and place it in the video grid container
-	function addStream(url, properties){
+	function addStream(url, camera){
 		var container = document.getElementById('video-container');
 		var template = document.createElement('template');
-		template.innerHTML = makeTemplateHTML(url, properties.LOCATION).trim();
+		template.innerHTML = makeTemplateHTML(url, camera.location).trim();
 
 		var clone = template.content.cloneNode(true);
 		container.appendChild(clone);
@@ -216,21 +260,19 @@
 		header.style.setProperty('display', 'none', 'important');
 
 		main.addEventListener('mouseenter', function() {
-			console.log("mouse enter");
 			header.style.setProperty('display', 'flex', 'important');
 		});
 
 		main.addEventListener('mouseleave', function() {
-			console.log("mouse leave");
 			header.style.setProperty('display', 'none', 'important');
 		});
 
 		closeButton.addEventListener('click', function() {
 			openStreams = openStreams.filter(m => m !== url);
-			openUnitIds = openUnitIds.filter(m => m !== properties.UNITID);
-			cameraMarkers[properties.UNITID].setStyle({fillColor: '#438cc1'});
-			cameraMarkers[properties.UNITID].setStyle({color: '#eaeaea'});
-			cameraMarkers[properties.UNITID].setStyle({weight: 1});
+			openUnitIds = openUnitIds.filter(m => m !== camera.id);
+			cameraMarkers[camera.id].setStyle({fillColor: '#438cc1'});
+			cameraMarkers[camera.id].setStyle({color: '#eaeaea'});
+			cameraMarkers[camera.id].setStyle({weight: 1});
 
 			window.location.hash = "#" + openUnitIds.join();
 			video.parentElement.remove();
@@ -388,6 +430,13 @@
 
 	:global(#contents) {
 		height: calc(30% - 60px);
+	}
+
+	:global(.circle-group) {
+		background-color: #2f5899;
+		border: 1px solid #eaeaea;
+		border-radius:50%;
+		-moz-border-radius:50%;
 	}
 
 	:global(.flex-grow) {

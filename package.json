@@ -21,6 +21,7 @@
     "@fortawesome/free-solid-svg-icons": "^6.1.1",
     "hls.js": "^1.1.5",
     "leaflet": "^1.8.0",
+    "leaflet.markercluster": "^1.5.3",
     "sirv-cli": "^2.0.0",
     "svelte-fa": "^3.0.2",
     "sveltestrap": "^5.9.0"

@@ -20,6 +20,7 @@ You can view the live site **[here](https://the-sink.github.io/seattle-traffic-c
 - [ ]  Move certain parameters to a config file (such as marker colors)
 - [ ]  Investigate possibility of a low framerate mode for when many cameras are pulled up at once
 - [ ]  Add drag function to camera streams so the layout can be rearranged
+- [ ]  Internal: Add GitHub action to automatically generate updated camera list and commit to repository (every 24h perhaps?)
 
 ---
 
