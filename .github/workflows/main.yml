@@ -1,2 +1,17 @@
-- name: Keep Remote File Locally Up-to-date
-  uses: TheLastProject/keep-remote-file-locally-up-to-date-action@v1
+jobs:
+  keep_file_updated:
+    runs-on: ubuntu-latest
+    name: Keep file updated
+    steps:
+    - name: Checkout repo
+      id: checkout
+      uses: actions/checkout@v2
+    - name: Update file
+      id: update_file
+      uses: TheLastProject/keep-remote-file-locally-up-to-date-action@v1
+      with:
+        url: https://web.seattle.gov/Travelers/api/Map/Data?zoomId=18&type=2
+        file_in_repo: data/sdot.json
+on:
+  schedule:
+    - cron: '0 0 * * *'
