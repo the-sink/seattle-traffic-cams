@@ -16,5 +16,5 @@ jobs:
         file_in_repo: data/sdot.json
 on:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 0 * * 0'
   workflow_dispatch:
