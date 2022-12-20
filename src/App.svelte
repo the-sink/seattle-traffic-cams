@@ -60,9 +60,9 @@
 		let streamHeader = `<div class="d-flex justify-content-between px-2 py-1 user-select-none stream-header"><div>${name}</div><div><button type="button" class="btn btn-outline-danger btn-sm p-0 px-1" style="font-weight:900;">X</div></div>`
 
 		if (url.endsWith('jpg')) {
-			return `<div class="card video-card" style="width: 25%;">${streamHeader}<img data-id="${url}" class="image-stream img-fluid"></div>`;
+			return `<div class="card video-card mb-2" style="width: 25%;">${streamHeader}<img data-id="${url}" class="image-stream img-fluid"></div>`;
 		} else {
-			return `<div class="card video-card" style="width: 25%;">${streamHeader}<video muted autoplay controls data-id="${url}" style="width:100%;height:100%;object-fit:cover;"></video></div>`;
+			return `<div class="card video-card mb-2" style="width: 25%;">${streamHeader}<video muted autoplay controls data-id="${url}"></video></div>`;
 		}
 	}
 
@@ -129,7 +129,9 @@
 			camera.coordinates = {lat: element.geometry.coordinates[1], lon: element.geometry.coordinates[0]};
 			camera.source = element.properties.OWNERSHIP;
 
-			cameras[element.properties.UNITID] = camera;
+			if (element.properties.UNITID in cameras && cameras[element.properties.UNITID].url == camera.url) {
+				cameras[element.properties.UNITID] = camera;
+			}
 		}
 
 		// Iterate over each camera and add them to the map
@@ -183,6 +185,8 @@
 
 					if (fullyLoaded) window.location.hash = "#" + openUnitIds.join();
 				});
+			} else {
+				console.log("Camera ", camera.id, " not working, ignoring...");
 			};
 		};
 
@@ -444,7 +448,12 @@
 	}
 
 	:global(video) {
-		object-fit: cover;
+		width: 100% !important;
+		height: 100% !important;
+	}
+
+	:global(.video-card) {
+		background: black !important;
 	}
 
 	:global(.form-control) {
