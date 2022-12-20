@@ -1,0 +1,2 @@
+- name: Keep Remote File Locally Up-to-date
+  uses: TheLastProject/keep-remote-file-locally-up-to-date-action@v1
