@@ -137,7 +137,7 @@
 		// Iterate over each camera and add them to the map
 
 		for (const [_, camera] of Object.entries(cameras)) {
-			const url = (camera.source == "SDOT" ? `https://58cc2dce193dd.streamlock.net:443/live/${camera.url.replace('.jpg', '.stream')}/playlist.m3u8` : 'https://images.wsdot.wa.gov/nw/' + camera.url).replace(/(\r\n|\n|\r)/gm, "");
+			const url = (camera.source == "SDOT" ? `https://61e0c5d388c2e.streamlock.net:443/live/${camera.url.replace('.jpg', '.stream')}/playlist.m3u8` : 'https://images.wsdot.wa.gov/nw/' + camera.url).replace(/(\r\n|\n|\r)/gm, "");
 			
 			// For SDOT streams only, this will try to make sure the feed actually exists.
 			// The force-cache mode may present issues if a camera is only temporarily offline, as the cached result will be used even if stale. Better solution needed at some point.
